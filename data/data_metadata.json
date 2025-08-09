@@ -1,0 +1,67 @@
+{
+  "data_sources": {
+    "gtfs_sources": [
+      "https://www.kaggle.com/datasets/harrywang/gtfs-public-transportation-data",
+      "https://transitfeeds.com/p/mta/79",
+      "https://transitfeeds.com/p/chicago-transit-authority/165"
+    ],
+    "census_sources": [
+      "https://www.kaggle.com/datasets/muonneutrino/us-census-demographic-data",
+      "https://data.census.gov/",
+      "https://www.nhgis.org/"
+    ]
+  },
+  "data_description": {
+    "gtfs_data": {
+      "source": "NYC MTA Subway Stops (Realistic Structure)",
+      "stops_count": 30,
+      "geographic_coverage": "New York City",
+      "data_structure": "Based on actual MTA GTFS format",
+      "file": "nyc_subway_stops.csv",
+      "columns": {
+        "stop_id": "Unique identifier for each transit stop",
+        "stop_name": "Name of the transit stop/station",
+        "stop_lat": "Latitude coordinate of the stop",
+        "stop_lon": "Longitude coordinate of the stop",
+        "stop_desc": "Description of the stop (train line, terminus, etc.)"
+      }
+    },
+    "census_data": {
+      "source": "NYC Census Tracts (Realistic Structure)",
+      "tracts_count": 20,
+      "geographic_coverage": "New York City",
+      "data_structure": "Based on actual Census tract format",
+      "file": "nyc_census_tracts.csv",
+      "columns": {
+        "tract_id": "Census tract identifier",
+        "tract_name": "Neighborhood name",
+        "latitude": "Centroid latitude of the tract",
+        "longitude": "Centroid longitude of the tract",
+        "total_population": "Total population in the tract",
+        "median_income": "Median household income in dollars",
+        "car_ownership_rate": "Proportion of households with cars",
+        "area_sq_km": "Area of the tract in square kilometers",
+        "poverty_rate": "Proportion of population below poverty line",
+        "population_density": "Population per square kilometer"
+      }
+    }
+  },
+  "access_notes": {
+    "gtfs_access": "To get real GTFS data, visit the sources above and download manually or use API keys",
+    "census_access": "To get real Census data, register for API access at https://api.census.gov/",
+    "mta_api": "MTA requires API key registration at https://api.mta.info/",
+    "census_api": "Census API requires registration at https://api.census.gov/"
+  },
+  "data_quality": {
+    "realistic_structure": "Data follows actual GTFS and Census formats",
+    "geographic_accuracy": "Coordinates represent real NYC locations",
+    "demographic_realism": "Population and income data reflect realistic NYC patterns",
+    "transit_coverage": "Includes major NYC subway lines (1, 2, 3 trains plus major hubs)"
+  },
+  "project_use": {
+    "transit_equity_analysis": "Analyze transit access disparities across NYC neighborhoods",
+    "distance_calculations": "Calculate distances from census tracts to nearest transit stops",
+    "clustering_analysis": "Group areas by transit access and demographic characteristics",
+    "equity_scoring": "Create transit equity scores based on population, income, and access"
+  }
+}

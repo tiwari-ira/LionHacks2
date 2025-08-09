@@ -1,0 +1,11 @@
+stop_id,stop_name,stop_lat,stop_lon,stop_desc
+S001,Central Station,40.7128,-74.0060,Main transit hub
+S002,Downtown Hub,40.7589,-73.9851,Downtown connection
+S003,University Stop,40.7505,-73.9934,University area
+S004,Airport Terminal,40.6413,-73.7781,Airport access
+S005,Shopping Center,40.7505,-73.9934,Shopping district
+S006,Suburban Station,40.7589,-73.9851,Suburban area
+S007,Industrial Zone,40.7505,-73.9934,Industrial district
+S008,Residential Area,40.7128,-74.0060,Residential neighborhood
+S009,Business District,40.7589,-73.9851,Business center
+S010,Park & Ride,40.6413,-73.7781,Park and ride facility

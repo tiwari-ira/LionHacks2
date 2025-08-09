@@ -1,0 +1,36 @@
+stop_id,stop_name,stop_lat,stop_lon,stop_desc
+101,Van Cortlandt Park-242 St,40.889248,-73.898583,1 train terminus
+103,238 St,40.884667,-73.900870,1 train local stop
+104,231 St,40.878856,-73.904834,1 train local stop
+106,Marble Hill-225 St,40.874561,-73.909831,1 train local stop
+107,215 St,40.869444,-73.915279,1 train local stop
+108,207 St,40.864614,-73.918819,1 train local stop
+109,Dyckman St,40.860531,-73.925536,1 train local stop
+110,191 St,40.855225,-73.929814,1 train local stop
+111,181 St,40.849505,-73.933596,1 train local stop
+112,168 St-Washington Hts,40.840556,-73.940133,1 train local stop
+201,Wakefield-241 St,40.903125,-73.850620,2 train terminus
+204,Nereid Av,40.898379,-73.854414,2 train local stop
+205,233 St,40.888813,-73.860816,2 train local stop
+206,225 St,40.880889,-73.866434,2 train local stop
+207,219 St,40.874087,-73.870064,2 train local stop
+208,Gun Hill Rd,40.867535,-73.877172,2 train local stop
+209,Burke Av,40.871296,-73.867051,2 train local stop
+210,Allerton Av,40.865491,-73.867193,2 train local stop
+211,Pelham Pkwy,40.858985,-73.855359,2 train local stop
+212,Bronx Park East,40.850496,-73.866135,2 train local stop
+301,Harlem-148 St,40.823880,-73.936470,3 train terminus
+302,145 St,40.820421,-73.936245,3 train local stop
+303,135 St,40.817942,-73.940858,3 train local stop
+304,125 St,40.815581,-73.945264,3 train local stop
+305,116 St,40.812118,-73.949625,3 train local stop
+306,Central Park North (110 St),40.799075,-73.951822,3 train local stop
+307,103 St,40.799446,-73.968378,3 train local stop
+308,96 St,40.791619,-73.964217,3 train local stop
+309,86 St,40.785672,-73.976217,3 train local stop
+310,79 St,40.783434,-73.980373,3 train local stop
+401,Times Square-42 St,40.755983,-73.986229,Major transit hub
+402,Grand Central-42 St,40.752769,-73.977189,Grand Central Terminal
+403,Penn Station,40.750373,-73.993391,Penn Station
+404,Union Square-14 St,40.735736,-73.990568,Union Square
+405,Atlantic Av-Barclays Ctr,40.683666,-73.978813,Atlantic Terminal
