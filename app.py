@@ -818,7 +818,7 @@ def generate_pdf_report(distances_df, gtfs_df, cluster_stats=None, proposed_stop
     story.append(Spacer(1, 20))
     
     # Cluster Analysis (if available)
-    if cluster_stats is not None:
+    if cluster_stats is not None and not cluster_stats.empty:
         story.append(Paragraph("Neighborhood Clustering Analysis", heading_style))
         story.append(Paragraph(
             "The analysis identified distinct neighborhood types based on transit access, income levels, "
@@ -826,31 +826,60 @@ def generate_pdf_report(distances_df, gtfs_df, cluster_stats=None, proposed_stop
             normal_style
         ))
         story.append(Spacer(1, 20))
-        
-        # Convert cluster stats to table format
-        cluster_data = [['Cluster Type', 'Count', 'Avg Distance (km)', 'Avg Income ($)', 'Avg Population']]
-        for cluster_type, stats in cluster_stats.iterrows():
-            cluster_data.append([
-                cluster_type,
-                f"{stats['count']}",
-                f"{stats['distance_to_nearest_stop_km']:.2f}",
-                f"${stats['median_income']:,.0f}",
-                f"{stats['total_population']:,.0f}"
-            ])
-        
-        cluster_table = Table(cluster_data, colWidths=[1.2*inch, 0.8*inch, 1.2*inch, 1.2*inch, 1.2*inch])
-        cluster_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        story.append(cluster_table)
-        story.append(Spacer(1, 20))
+
+        # Try to adapt to the available columns from clustering output
+        # Prefer mean-based columns created by analyze_clusters
+        preferred_cols = [
+            'distance_to_nearest_stop_km_mean',
+            'median_income_mean',
+            'total_population_mean'
+        ]
+        cols_present = [c for c in preferred_cols if c in cluster_stats.columns]
+
+        if cols_present:
+            header_titles = ['Cluster', 'Avg Distance (km)', 'Avg Income ($)', 'Avg Population']
+            # Trim header based on available cols
+            header = [header_titles[0]]
+            for c in cols_present:
+                if 'distance_to_nearest_stop_km' in c:
+                    header.append(header_titles[1])
+                elif 'median_income' in c:
+                    header.append(header_titles[2])
+                elif 'total_population' in c:
+                    header.append(header_titles[3])
+
+            cluster_data = [header]
+            for idx, row in cluster_stats.iterrows():
+                out_row = [str(idx)]
+                for c in cols_present:
+                    if 'distance_to_nearest_stop_km' in c:
+                        out_row.append(f"{row[c]:.2f}")
+                    elif 'median_income' in c:
+                        out_row.append(f"${row[c]:,.0f}")
+                    elif 'total_population' in c:
+                        out_row.append(f"{row[c]:,.0f}")
+                cluster_data.append(out_row)
+
+            cluster_table = Table(cluster_data, colWidths=[1.4*inch] + [1.2*inch]*(len(header)-1))
+            cluster_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            story.append(cluster_table)
+            story.append(Spacer(1, 20))
+        else:
+            # Fallback: include a simple paragraph noting that detailed cluster stats are unavailable
+            story.append(Paragraph(
+                "Detailed cluster statistics are unavailable in the expected format.",
+                normal_style
+            ))
+            story.append(Spacer(1, 12))
     
     # New Stop Proposals (if available)
     if proposed_stops_df is not None and len(proposed_stops_df) > 0:
@@ -1920,6 +1949,12 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
     
     with st.spinner("🔄 Normalizing features for machine learning..."):
         normalized_df, scaler, feature_columns = normalize_features(distances_df)
+
+    # Ensure equity scores are available within this view for proposals and downstream metrics
+    with st.spinner("🔄 Calculating transit equity scores..."):
+        equity_scores_adv = calculate_transit_equity_score(distances_df, weights)
+        distances_with_equity = distances_df.copy()
+        distances_with_equity['transit_equity_score'] = equity_scores_adv
     
     st.success(f"✅ Feature normalization complete! Normalized {len(feature_columns)} features.")
     
@@ -2016,6 +2051,14 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
         )
         st.plotly_chart(fig_cluster_dist, use_container_width=True)
     
+    # Define cluster colors for reuse below
+    cluster_colors = {
+        "🚨 Severely Underserved": "red",
+        "⚠️ Moderately Underserved": "orange",
+        "✅ Adequately Served": "yellow",
+        "🌟 Well Served": "green",
+    }
+
     # Interactive cluster map
     st.subheader("🗺️ Interactive Cluster Map")
     
@@ -2025,14 +2068,6 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
         center_lon = (gtfs_df['stop_lon'].mean() + distances_with_clusters['longitude'].mean()) / 2
         
         cluster_map = folium.Map(location=[center_lat, center_lon], zoom_start=11)
-        
-        # Color scheme for clusters
-        cluster_colors = {
-            "🚨 Severely Underserved": "red",
-            "⚠️ Moderately Underserved": "orange", 
-            "✅ Adequately Served": "yellow",
-            "🌟 Well Served": "green"
-        }
         
         # Add transit stops
         for idx, row in gtfs_df.head(30).iterrows():
@@ -2060,11 +2095,6 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
     # New Stop Proposals Section
     st.subheader("🚏 STEP 6: Propose New Stops")
     
-    # Ensure we have equity scores
-    if 'transit_equity_score' not in distances_df.columns:
-        st.warning("⚠️ Please calculate equity scores first in the Transit Equity Analysis tab.")
-        return
-    
     # Display proposal parameters from sidebar
     col1, col2, col3 = st.columns(3)
     
@@ -2081,7 +2111,7 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
     
     # Generate proposals
     with st.spinner(f"🔄 Generating new stop proposals for areas with equity score < {equity_threshold}..."):
-        proposed_stops_df, impact_analysis_df = propose_new_stops(distances_df, gtfs_df, equity_threshold, max_proposals)
+        proposed_stops_df, impact_analysis_df = propose_new_stops(distances_with_equity, gtfs_df, equity_threshold, max_proposals)
     
     if len(proposed_stops_df) > 0:
         st.success(f"✅ Generated {len(proposed_stops_df)} new stop proposals!")
@@ -2129,7 +2159,7 @@ def display_advanced_analytics(gtfs_df, census_df, distances_df, n_clusters, equ
         st.subheader("🗺️ Proposed New Stops Map")
         
         with st.spinner("🔄 Creating proposed stops map..."):
-            proposed_map = create_proposed_stops_map(distances_df, gtfs_df, proposed_stops_df)
+            proposed_map = create_proposed_stops_map(distances_with_equity, gtfs_df, proposed_stops_df)
         
         st_folium(proposed_map, width=800, height=600)
         
